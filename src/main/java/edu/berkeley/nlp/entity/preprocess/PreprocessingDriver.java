@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.List;
-
+import java.nio.file.Paths;
 import edu.berkeley.nlp.PCFGLA.CoarseToFineMaxRuleParser;
 import edu.berkeley.nlp.PCFGLA.Grammar;
 import edu.berkeley.nlp.PCFGLA.Lexicon;
@@ -105,14 +105,14 @@ public class PreprocessingDriver implements Runnable {
   }
   
   public void run() {
-    Logger.setFig();
-    Logger.logss("Loading sentence splitter");
+    //Logger.setFig();
+    //Logger.logss("Loading sentence splitter");
     SentenceSplitter splitter = SentenceSplitter.loadSentenceSplitter(sentenceSplitterModelPath);
-    Logger.logss("Loading parser");
+    //Logger.logss("Loading parser");
     CoarseToFineMaxRuleParser parser = loadParser(grammarPath);
-    Logger.logss("Loading backoff parser");
+    //Logger.logss("Loading backoff parser");
     CoarseToFineMaxRuleParser backoffParser = loadParser(backoffGrammarPath);
-    Logger.logss("Loading NER system");
+    //Logger.logss("Loading NER system");
     NerSystemLabeled nerSystem = (nerModelPath.isEmpty() ? null : NerSystemLabeled.loadNerSystem(nerModelPath));
     if (!new File(inputDir).exists()) {
       throw new RuntimeException("Couldn't locate input directory " + inputDir);
@@ -129,7 +129,7 @@ public class PreprocessingDriver implements Runnable {
           String docName = conllDoc.docID();
           String[][] docConllLines = renderDocConllLines(docName, conllDoc.wordsArrs(), parser, backoffParser, nerSystem);
           writeConllLines(docName, docConllLines, writer);
-          Logger.logss("Processed document " + docName + " and wrote result to " + outputDir);
+          //Logger.logss("Processed document " + docName + " and wrote result to " + outputDir);
         }
         writer.close();
       } else {
@@ -139,7 +139,7 @@ public class PreprocessingDriver implements Runnable {
         }
       }
     } else {
-      Logger.logss("Need to provide either a distinct inputPath/outputPath pair or a distinct inputDir/outputDir");
+      //Logger.logss("Need to provide either a distinct inputPath/outputPath pair or a distinct inputDir/outputDir");
     }
   }
   
@@ -147,6 +147,11 @@ public class PreprocessingDriver implements Runnable {
     String docName = inputPath;
     if (!useFullPathsAsDocNames && docName.contains("/")) {
       docName = docName.substring(docName.lastIndexOf("/") + 1);
+    }
+    File f = new File(outputPath);
+    if(f.exists() && !f.isDirectory()) { 
+       Logger.logss(outputPath +" already exists!"); 
+       return; 
     }
     String[] lines = IOUtils.readLinesHard(inputPath).toArray(new String[0]);
     String[] canonicalizedParagraphs = splitter.formCanonicalizedParagraphs(lines, respectInputLineBreaks, respectInputTwoLineBreaks);
@@ -164,7 +169,7 @@ public class PreprocessingDriver implements Runnable {
     } else {
       tokenizedSentences = SentenceSplitter.tokenize(sentences);
     }
-    Logger.logss("Document " + docName + " contains " + lines.length + " lines and " + tokenizedSentences.length + " sentences");
+    //Logger.logss("Document " + docName + " contains " + lines.length + " lines and " + tokenizedSentences.length + " sentences");
     String[][] docConllLines = renderDocConllLines(docName, tokenizedSentences, parser, backoffParser, nerSystem);
     writeConllLines(docName, docConllLines, outputPath);
   }
@@ -178,6 +183,10 @@ public class PreprocessingDriver implements Runnable {
   public static void writeConllLines(String docName, String[][] docConllLines, PrintWriter writer) {
     writer.println("#begin document (" + docName + "); part 000");
     for (String[] sentenceConllLines : docConllLines) {
+      if (sentenceConllLines == null) {
+        writer.println();
+        continue;
+      }
       for (String conllLine : sentenceConllLines) {
         writer.println(conllLine);
       }
@@ -191,9 +200,13 @@ public class PreprocessingDriver implements Runnable {
     for (int sentIdx = 0; sentIdx < tokenizedSentences.length; sentIdx++) {
       String[] tokenizedSentence = tokenizedSentences[sentIdx];
       Tree<String> parse = parse(parser, backoffParser, Arrays.asList(tokenizedSentence));
+      if (parse == null){
+         conllLines[sentIdx] = null;
+         continue;
+      } 
       if (parse.getYield().size() != tokenizedSentence.length) {
-        Logger.logss("WARNING: couldn't parse sentence, dropping it: " + Arrays.toString(tokenizedSentence));
-        Logger.logss("  (This will be fixed to backing off to an X-bar grammar in a future release)");
+        //Logger.logss("WARNING: couldn't parse sentence, dropping it: " + Arrays.toString(tokenizedSentence));
+        //Logger.logss("  (This will be fixed to backing off to an X-bar grammar in a future release)");
       } else {
         String[] posTags = new String[tokenizedSentence.length];
         List<String> preterminals = parse.getPreTerminalYield();
@@ -320,7 +333,8 @@ public class PreprocessingDriver implements Runnable {
   public static Tree<String> parse(CoarseToFineMaxRuleParser parser, CoarseToFineMaxRuleParser backoffParser, List<String> sentence) {
     Tree<String> result = parseSoft(parser, backoffParser, sentence);
     if (result == null) {
-      throw new RuntimeException("Couldn't parse even with backoff parser!");
+      //throw new RuntimeException("Couldn't parse even with backoff parser!");
+      return null;
     }
     return result;
   }
@@ -335,11 +349,11 @@ public class PreprocessingDriver implements Runnable {
       goodParseFound = parsedTree.getYield().size() == sentence.size();
     }
     if (!goodParseFound && backoffParser != null) {
-      Logger.logss("Using backoff parser on sentence: " + sentence.toString());
+      //Logger.logss("Using backoff parser on sentence: " + sentence.toString());
       parsedTree = backoffParser.getBestConstrainedParse(sentence, posTags, null);
       goodParseFound = parsedTree.getYield().size() == sentence.size();
       if (!goodParseFound) {
-        Logger.logss("WARNING: Backoff parser failed on sentence: " + sentence.toString());
+        //Logger.logss("WARNING: Backoff parser failed on sentence: " + sentence.toString());
       }
     }
     if (!goodParseFound) {

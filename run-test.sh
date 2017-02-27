@@ -1,7 +1,7 @@
 #!/bin/bash
 
 jarpath=berkeley-entity-1.0.jar
-
+jarpath=berkeley-entity-assembly-1.jar
 mkdir test/scratch
 mkdir test/preprocessed
 mkdir test/coref
