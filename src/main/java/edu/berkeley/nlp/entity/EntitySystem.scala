@@ -201,7 +201,7 @@ object EntitySystem {
 
   def readFile(): ListBuffer[String] ={
     val alreadyReadFiles  = new ListBuffer[String]()
-    if (Source.fromFile(Execution.getFile("output.conll")).exists()) {
+    if (Files.exists(Paths.get(Execution.getFile("output.conll")))) {
       for(line <- Source.fromFile(Execution.getFile("output.conll")).getLines()){
         if (line.contains("#begin document (") )
           alreadyReadFiles += line.replace("); part 000","").replace("#begin document (","")
