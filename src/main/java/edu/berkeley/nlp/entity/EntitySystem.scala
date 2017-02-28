@@ -329,7 +329,7 @@ object EntitySystem {
       fgfOnto.getDocFactorGraph(jointDoc, false, true, true, PairwiseLossFunctions(Driver.lossFcn), JointLossFcns.nerLossFcn, JointLossFcns.wikiLossFcn);
     });
     PairwiseIndexingFeaturizer.printFeatureTemplateCounts(featureIndexer)
-    Logger.logss(featureIndexer.size + " total features");
+    //Logger.logss(featureIndexer.size + " total features");
     
     val finalWeights = new GeneralTrainer[JointDoc].trainAdagrad(jointDocs, computer, featureIndexer.size, Driver.eta.toFloat, Driver.reg.toFloat, Driver.batchSize, Driver.numItrs);
     val model = new JointPredictor(jointFeaturizer, finalWeights, corefPruner, nerPruner).pack;
@@ -370,7 +370,7 @@ object EntitySystem {
       }
       corpusAnnots;
     } else {
-      Logger.logss("Wikification not loaded");
+      //Logger.logss("Wikification not loaded");
       new CorpusWikiAnnots;
     }
     val corefDocs = if (Driver.useGoldMentions) {
@@ -455,7 +455,7 @@ object EntitySystem {
       fgfAce.getDocFactorGraph(jointDoc, false, true, true, PairwiseLossFunctions(Driver.lossFcn), JointLossFcns.nerLossFcn, JointLossFcns.wikiLossFcn);
     });
     PairwiseIndexingFeaturizer.printFeatureTemplateCounts(featureIndexer)
-    Logger.logss(featureIndexer.size + " total features");
+    // Logger.logss(featureIndexer.size + " total features");
     
     val finalWeights = new GeneralTrainer[JointDocACE].trainAdagrad(jointDocs, computer, featureIndexer.size, Driver.eta.toFloat, Driver.reg.toFloat, Driver.batchSize, Driver.numItrs);
     val model = new JointPredictorACE(jointFeaturizer, finalWeights, corefPruner).pack;
@@ -523,13 +523,13 @@ object EntitySystem {
       indepFgfAce.getDocFactorGraph(jointDoc, false, true, true, PairwiseLossFunctions(Driver.lossFcn), JointLossFcns.nerLossFcn, JointLossFcns.wikiLossFcn);
     });
     PairwiseIndexingFeaturizer.printFeatureTemplateCounts(indepFeatureIndexer)
-    Logger.logss(indepFeatureIndexer.size + " total features");
+    //Logger.logss(indepFeatureIndexer.size + " total features");
     
     val indepWeights = new GeneralTrainer[JointDocACE].trainAdagrad(jointDocs, indepComputer, indepFeatureIndexer.size, Driver.eta.toFloat, Driver.reg.toFloat, Driver.batchSize, Driver.numItrs);
     
     ///////////////////////
     // JOINT MODEL
-    Logger.logss("COMPUTED INITIAL WEIGHTS; NOW DOING JOINT PASS")
+    //Logger.logss("COMPUTED INITIAL WEIGHTS; NOW DOING JOINT PASS")
     // Mark coref feature caches as dirty so they get cleared; this is because the features are reindexed the second
     // time around
     jointDocs.foreach(_.docGraph.cacheEmpty = true)
@@ -544,7 +544,7 @@ object EntitySystem {
       fgfAce.getDocFactorGraph(jointDoc, false, true, true, PairwiseLossFunctions(Driver.lossFcn), JointLossFcns.nerLossFcn, JointLossFcns.wikiLossFcn);
     });
     PairwiseIndexingFeaturizer.printFeatureTemplateCounts(jointFeatureIndexer)
-    Logger.logss(jointFeatureIndexer.size + " total features");
+    //Logger.logss(jointFeatureIndexer.size + " total features");
     
     // Make the projector
     val indepFeatureMapping = Array.tabulate(jointFeatureIndexer.size)(i => {

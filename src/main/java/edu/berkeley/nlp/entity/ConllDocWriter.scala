@@ -17,7 +17,7 @@ import edu.berkeley.nlp.entity.wiki.WikiAnnotReaderWriter
 object ConllDocWriter {
   
   def writeDoc(writer: PrintWriter, conllDoc: ConllDoc) {
-    writeIncompleteConllDoc(writer, conllDoc)
+      writeIncompleteConllDoc(writer, conllDoc)
   }
 
   /**
@@ -272,8 +272,8 @@ object ConllDocWriter {
     convertToIllinoisColumnFormat("data/ontonotes-conll/train", "data/illinois-2011/train-shuf.col", true);
     convertToIllinoisColumnFormat("data/ontonotes-conll/dev", "data/illinois-2011/dev.col", false);
     convertToIllinoisColumnFormat("data/ontonotes-conll/test", "data/illinois-2011/test.col", false);
-//    convertToIllinoisColumnFormat("data/conll-2012-en/train", "data/illinois-2012/train-shuf.col", true);
-//    convertToIllinoisColumnFormat("data/conll-2012-en/dev", "data/illinois-2012/dev.col", false);
-//    convertToIllinoisColumnFormat("data/conll-2012-en/test", "data/illinois-2012/test.col", false);
+    //    convertToIllinoisColumnFormat("data/conll-2012-en/train", "data/illinois-2012/train-shuf.col", true);
+    //    convertToIllinoisColumnFormat("data/conll-2012-en/dev", "data/illinois-2012/dev.col", false);
+    //    convertToIllinoisColumnFormat("data/conll-2012-en/test", "data/illinois-2012/test.col", false);
   }
 }

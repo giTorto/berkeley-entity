@@ -37,7 +37,7 @@ class JointPredictor(val jointFeaturizer: JointFeaturizerShared[NerFeaturizer],
     val fgfOnto = new FactorGraphFactoryOnto(jointFeaturizer, maybeWikipediaInterface);
     val computer = new JointComputerShared(fgfOnto);
     (jointDoc: JointDoc) => {
-      Logger.logss("Decoding " + jointDoc.rawDoc.printableDocName);
+      //Logger.logss("Decoding " + jointDoc.rawDoc.printableDocName);
       // Don't decode if there are no mentions because things will break
       if (jointDoc.docGraph.getMentions.size == 0) {
         if (jointDoc.rawDoc.numSents > 0) {
