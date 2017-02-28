@@ -203,7 +203,7 @@ object EntitySystem {
     val alreadyReadFiles  = new ListBuffer[String]()
     if (Source.fromFile(Execution.getFile("output.conll")).exists()) {
       for(line <- Source.fromFile(Execution.getFile("output.conll")).getLines()){
-        if ("#begin document (" in line)
+        if (line.contains("#begin document (") )
           alreadyReadFiles += line.replace("); part 000","").replace("#begin document (","")
 
       }
