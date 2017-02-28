@@ -53,6 +53,8 @@ import edu.berkeley.nlp.entity.wiki._
 import edu.berkeley.nlp.entity.joint.JointPredictorACE
 import edu.berkeley.nlp.entity.coref.CorefSystem
 import edu.berkeley.nlp.entity.coref.AuxiliaryFeaturizer
+import java.nio.file.{Paths, Files}
+import scala.collection.mutable.ListBuffer
 
 object EntitySystem {
   
@@ -194,8 +196,21 @@ object EntitySystem {
       jointDocsOrigOrder;
     }
   }
+
+  def readFile(): ListBuffer[String] ={
+    val alreadyReadFiles  = new ListBuffer[String]()
+    if (Source.fromFile(Execution.getFile("output.conll")).exists()) {
+      for(line <- Source.fromFile(Execution.getFile("output.conll")).getLines()){
+        if ("#begin document (" in line)
+          alreadyReadFiles += line.replace("); part 000","").replace("#begin document (","")
+
+      }
+    }
+    return alreadyReadFiles
+  }
   
   def runOntoPredict(path: String, size: Int, modelPath: String) {
+    println(readFile())
     val jointPredictor = GUtil.load(modelPath).asInstanceOf[JointPredictor];
     val numberGenderComputer = NumberGenderComputer.readBergsmaLinData(Driver.numberGenderDataPath);
     val mentionPropertyComputer = new MentionPropertyComputer(Some(numberGenderComputer));
