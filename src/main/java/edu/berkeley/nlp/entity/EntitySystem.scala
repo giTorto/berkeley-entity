@@ -55,7 +55,30 @@ import edu.berkeley.nlp.entity.coref.CorefSystem
 import edu.berkeley.nlp.entity.coref.AuxiliaryFeaturizer
 import java.nio.file.{Paths, Files}
 import scala.io.Source
-
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.Reader;
+import java.io.Writer;
+import java.nio.channels.Channels;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 import scala.collection.mutable.ListBuffer
 
 object EntitySystem {
@@ -210,23 +233,60 @@ object EntitySystem {
     }
     return alreadyReadFiles
   }
-  
+
+  @throws(classOf[RuntimeException])
+  def openOutHard(path: File): PrintWriter ={
+    try {
+      return openOut(path);
+    } catch {
+      case _: Throwable =>  throw new RuntimeException();
+    }
+  }
+
+  def openOutHard(path: String): PrintWriter ={
+    return openOutHard(new File(path));
+  }
+
+  @throws(classOf[IOException])
+  def openOut(path: String): PrintWriter = {
+    return openOut(new File(path));
+  }
+
+  def getCharEncoding(): String ={
+    return "UTF-8";
+  }
+
+  @throws(classOf[IOException])
+  def openOut(path: File): PrintWriter ={
+    val os = if (path.getName().endsWith(".gz")) {
+      new GZIPOutputStream(new FileOutputStream(path, true))
+    }else{
+      new FileOutputStream(path, true)
+    }
+    return new PrintWriter(getWriter(os));
+  }
+  @throws(classOf[IOException])
+  def getWriter(out: OutputStream) : PrintWriter = {
+    return new PrintWriter(new OutputStreamWriter(out, getCharEncoding()), true);
+  }
+
   def runOntoPredict(path: String, size: Int, modelPath: String) {
-    println(readFile())
+    val processed_file_list = readFile().toList
+    println(processed_file_list)
     val jointPredictor = GUtil.load(modelPath).asInstanceOf[JointPredictor];
     val numberGenderComputer = NumberGenderComputer.readBergsmaLinData(Driver.numberGenderDataPath);
     val mentionPropertyComputer = new MentionPropertyComputer(Some(numberGenderComputer));
     val maybeWikipediaInterface: Option[WikipediaInterface] = if (Driver.wikipediaPath != "") Some(GUtil.load(Driver.wikipediaPath).asInstanceOf[WikipediaInterface]) else None;
 //    val jointDocs = preprocessDocsForDecode(path, size, Driver.docSuffix, mentionPropertyComputer, jointPredictor.nerPruner, jointPredictor.corefPruner);
 //    jointPredictor.decodeWriteOutput(jointDocs, maybeWikipediaInterface, Driver.doConllPostprocessing);
-    val outWriter = IOUtils.openOutHard(Execution.getFile("output.conll"))
-    val outWikiWriter = IOUtils.openOutHard(Execution.getFile("output-wiki.conll"))
+    val outWriter = openOutHard(Execution.getFile("output.conll"))
+    val outWikiWriter = openOutHard(Execution.getFile("output-wiki.conll"))
     val predictor = jointPredictor.makeIndividualDocPredictionWriter(maybeWikipediaInterface, outWriter, outWikiWriter)
     val predictionWriter = (doc: ConllDoc) => {
       val jointDoc = preprocessDocForDecode(doc, mentionPropertyComputer, jointPredictor.nerPruner, jointPredictor.corefPruner)
       predictor(jointDoc)
     }
-    ConllDocReader.loadRawConllDocsWithSuffixProcessStreaming(path, size, Driver.docSuffix, predictionWriter)
+    ConllDocReader.loadRawConllDocsWithSuffixProcessStreaming(path, size, Driver.docSuffix, processed_file_list, predictionWriter)
     outWriter.close
     outWikiWriter.close
   }

@@ -16,6 +16,7 @@ import edu.berkeley.nlp.futile.fig.basic.IOUtils
 import java.io.File
 import edu.berkeley.nlp.futile.ling.AbstractCollinsHeadFinder
 import edu.berkeley.nlp.futile.syntax.Trees.PennTreeReader
+import scala.collection.mutable.ListBuffer
 
 class ConllDocReader(val lang: Language,
                      val betterParsesFile: String = "") {
@@ -381,16 +382,20 @@ object ConllDocReader {
    * Same as loadRawConllDocsWithSuffix but applies a function to the documents as it
    * reads them and discards the documents; useful for dealing with large datasets
    */
-  def loadRawConllDocsWithSuffixProcessStreaming(path: String, size: Int, suffix: String, fcn: ConllDoc => Unit, lang: Language = Language.ENGLISH, betterParsesFile: String = "") = {
+  def loadRawConllDocsWithSuffixProcessStreaming(path: String, size: Int, suffix: String, ignorable_files: List[String], fcn: ConllDoc => Unit, lang: Language = Language.ENGLISH, betterParsesFile: String = "") = {
     Logger.logss("Processing " + size + " docs from " + path + " ending with " + suffix);
     val files = getFiles(path, suffix)
     val reader = new ConllDocReader(lang, betterParsesFile);
     var docCounter = 0;
     var fileIdx = 0;
     while (fileIdx < files.size && (size == -1 || docCounter < size)) {
-      val numDocsRemaining = if (size == -1) Integer.MAX_VALUE else size - docCounter
-      val numDocsProcessed = reader.readConllDocsProcessStreaming(files(fileIdx).getAbsolutePath, fcn, numDocsRemaining)
-      docCounter += numDocsProcessed
+      val filename = files(fileIdx).getPath().replace(path+"/", "");
+      println(filename)
+      if (!ignorable_files.contains(filename)) {
+          val numDocsRemaining = if (size == -1) Integer.MAX_VALUE else size - docCounter
+          val numDocsProcessed = reader.readConllDocsProcessStreaming(files(fileIdx).getAbsolutePath, fcn, numDocsRemaining)
+          docCounter += numDocsProcessed
+      }
       fileIdx += 1;
     }
   }
