@@ -272,7 +272,6 @@ object EntitySystem {
 
   def runOntoPredict(path: String, size: Int, modelPath: String) {
     val processed_file_list = readFile().toList
-    println(processed_file_list)
     val jointPredictor = GUtil.load(modelPath).asInstanceOf[JointPredictor];
     val numberGenderComputer = NumberGenderComputer.readBergsmaLinData(Driver.numberGenderDataPath);
     val mentionPropertyComputer = new MentionPropertyComputer(Some(numberGenderComputer));
