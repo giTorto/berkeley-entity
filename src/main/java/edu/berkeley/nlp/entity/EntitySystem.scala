@@ -54,6 +54,8 @@ import edu.berkeley.nlp.entity.joint.JointPredictorACE
 import edu.berkeley.nlp.entity.coref.CorefSystem
 import edu.berkeley.nlp.entity.coref.AuxiliaryFeaturizer
 import java.nio.file.{Paths, Files}
+import scala.io.Source
+
 import scala.collection.mutable.ListBuffer
 
 object EntitySystem {
